@@ -12,3 +12,4 @@ and copy `src/` plus the versions from `gradle.properties` into it.
 | Super Hopper  | 16                   | 32                 |
 | Mega Hopper   | 64                   | 64                 |
 | Insta Hopper  | everything (5 slots) | everything         |
+|-----------------------------------------------------------|
