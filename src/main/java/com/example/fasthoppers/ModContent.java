@@ -14,6 +14,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.entity.HopperBlockEntity;
 
 public final class ModContent {
 	/** Sugar model (see assets/.../items/hopper_core.json) + enchantment glint. */
@@ -52,7 +54,7 @@ public final class ModContent {
 
 		// These blocks use the vanilla hopper block entity, so it has to accept them
 		// (otherwise they'd lose their inventory on chunk load).
-		BlockEntityType.HOPPER.addSupportedBlock(block);
+		new HopperBlockEntity(BlockPos.ZERO, Blocks.HOPPER.defaultBlockState()).getType().addSupportedBlock(block);
 		return block;
 	}
 
