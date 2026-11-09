@@ -54,7 +54,7 @@ public final class ModContent {
 
 		// These blocks use the vanilla hopper block entity, so it has to accept them
 		// (otherwise they'd lose their inventory on chunk load).
-		new HopperBlockEntity(BlockPos.ZERO, Blocks.HOPPER.defaultBlockState()).getType().addSupportedBlock(block);
+		new HopperBlockEntity(BlockPos.ZERO, Blocks.HOPPER.defaultBlockState()).getType().addValidBlock(block);
 		return block;
 	}
 
