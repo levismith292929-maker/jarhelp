@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": ["nnn", "cmc", "nnn"],
+  "key": { "n": "minecraft:netherite_ingot", "c": "fasthoppers:hopper_core", "m": "fasthoppers:mega_hopper" },
+  "result": { "id": "fasthoppers:insta_hopper", "count": 1 }
+}
