@@ -6,8 +6,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.SmithingMenu;
 import net.minecraft.world.item.ItemStack;
@@ -29,15 +27,5 @@ public abstract class SmithingMenuMixin {
 		ItemStack result = EnchantUpgrades.smithingResult(menu.getSlot(1).getItem(), menu.getSlot(2).getItem());
 		menu.getSlot(3).set(result);
 		ci.cancel();
-	}
-
-	@Inject(method = "mayPickup", at = @At("HEAD"), cancellable = true)
-	private void fasthoppers$mayPickup(Player player, boolean hasStack, CallbackInfoReturnable<Boolean> cir) {
-		AbstractContainerMenu menu = (AbstractContainerMenu) (Object) this;
-		if (hasStack
-				&& menu.getSlot(0).getItem().is(ModContent.ENCHANTED_FORGE)
-				&& !menu.getSlot(3).getItem().isEmpty()) {
-			cir.setReturnValue(true);
-		}
 	}
 }
