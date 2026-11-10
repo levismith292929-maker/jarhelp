@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": ["ddd", "cbc", "ddd"],
+  "key": { "d": "minecraft:diamond", "c": "fasthoppers:hopper_core", "b": "fasthoppers:better_hopper" },
+  "result": { "id": "fasthoppers:super_hopper", "count": 1 }
+}

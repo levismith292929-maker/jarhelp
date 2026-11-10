@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "show_notification": true,
+  "category": "misc",
+  "pattern": [
+    "ede",
+    "dbd",
+    "ede"
+  ],
+  "key": {
+    "d": "minecraft:diamond",
+    "b": "minecraft:book",
+    "e": "minecraft:experience_bottle"
+  },
+  "result": {
+    "id": "fasthoppers:magical_tome",
+    "count": 1
+  }
+}

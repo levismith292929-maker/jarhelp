@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": ["iii", "ihi", "ici"],
+  "key": { "i": "minecraft:iron_ingot", "h": "minecraft:hopper", "c": "fasthoppers:hopper_core" },
+  "result": { "id": "fasthoppers:better_hopper", "count": 1 }
+}

@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": ["bib", "iii", "bib"],
+  "key": { "b": "minecraft:blaze_powder", "i": "minecraft:iron_ingot" },
+  "result": { "id": "fasthoppers:hopper_core", "count": 1 }
+}
