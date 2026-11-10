@@ -1,7 +1,0 @@
-{
-  "type": "minecraft:crafting_shaped",
-  "category": "redstone",
-  "pattern": ["sss", "cmc", "sss"],
-  "key": { "s": "minecraft:netherite_scrap", "c": "fasthoppers:hopper_core", "m": "fasthoppers:super_hopper" },
-  "result": { "id": "fasthoppers:mega_hopper", "count": 1 }
-}
