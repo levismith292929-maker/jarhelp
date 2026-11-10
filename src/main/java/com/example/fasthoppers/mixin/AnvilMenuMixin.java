@@ -41,7 +41,7 @@ public abstract class AnvilMenuMixin {
 	}
 
 	/** Vanilla refuses to hand over a result that costs 0 levels, so allow ours. */
-	@Inject(method = "mayPickup", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "mayPickup", at = @At("HEAD"), cancellable = true, require = 0)
 	private void fasthoppers$mayPickup(Player player, boolean hasStack, CallbackInfoReturnable<Boolean> cir) {
 		AbstractContainerMenu menu = (AbstractContainerMenu) (Object) this;
 		if (hasStack
