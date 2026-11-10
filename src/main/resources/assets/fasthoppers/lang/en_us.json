@@ -3,5 +3,7 @@
   "block.fasthoppers.better_hopper": "Better Hopper",
   "block.fasthoppers.super_hopper": "Super Hopper",
   "block.fasthoppers.mega_hopper": "Mega Hopper",
-  "block.fasthoppers.insta_hopper": "Insta Hopper"
+  "block.fasthoppers.insta_hopper": "Insta Hopper",
+  "item.fasthoppers.magical_tome": "Magical Tome",
+  "item.fasthoppers.enchanted_forge": "Enchanted Forge"
 }

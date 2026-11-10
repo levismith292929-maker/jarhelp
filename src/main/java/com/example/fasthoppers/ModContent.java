@@ -14,12 +14,22 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import java.util.List;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
 
 public final class ModContent {
 	/** Sugar model (see assets/.../items/hopper_core.json) + enchantment glint. */
 	public static final Item HOPPER_CORE = registerCore("hopper_core");
+
+	/** Anvil upgrader. Looks like an enchanted book (see items/magical_tome.json). */
+	public static final Item MAGICAL_TOME = registerTome("magical_tome");
+	/** Smithing-table template. Looks like the netherite upgrade template + glint. */
+	public static final Item ENCHANTED_FORGE = registerForge("enchanted_forge");
 
 	public static final Block BETTER_HOPPER = registerHopper("better_hopper", HopperTier.BETTER);
 	public static final Block SUPER_HOPPER = registerHopper("super_hopper", HopperTier.SUPER);
@@ -34,6 +44,34 @@ public final class ModContent {
 		ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, id);
 		Item.Properties props = new Item.Properties()
 				.setId(key)
+				.component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
+		return Registry.register(BuiltInRegistries.ITEM, key, new Item(props));
+	}
+
+	private static Item registerTome(String name) {
+		ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, FastHoppers.id(name));
+		Item.Properties props = new Item.Properties()
+				.setId(key)
+				.rarity(Rarity.EPIC)
+				.component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)
+				.component(DataComponents.LORE, new ItemLore(List.of(
+						lore("Inked in a hand that is not quite human,"),
+						lore("its pages whisper of levels no mortal"),
+						lore("was ever meant to climb."),
+						lore("Press it to a tome at its limit,"),
+						lore("and the ancient letters will grow one rune stronger."))));
+		return Registry.register(BuiltInRegistries.ITEM, key, new Item(props));
+	}
+
+	private static Component lore(String text) {
+		return Component.literal(text).withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC);
+	}
+
+	private static Item registerForge(String name) {
+		ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, FastHoppers.id(name));
+		Item.Properties props = new Item.Properties()
+				.setId(key)
+				.rarity(Rarity.EPIC)
 				.component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
 		return Registry.register(BuiltInRegistries.ITEM, key, new Item(props));
 	}
@@ -59,6 +97,10 @@ public final class ModContent {
 	}
 
 	public static void initialize() {
+		CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.INGREDIENTS).register(tab -> {
+			tab.accept(MAGICAL_TOME);
+			tab.accept(ENCHANTED_FORGE);
+		});
 		CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.REDSTONE_BLOCKS).register(tab -> {
 			tab.accept(HOPPER_CORE);
 			tab.accept(BETTER_HOPPER.asItem());
