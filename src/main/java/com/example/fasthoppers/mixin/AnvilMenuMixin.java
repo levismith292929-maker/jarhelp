@@ -1,7 +1,7 @@
 package com.example.fasthoppers.mixin;
 
 import com.example.fasthoppers.EnchantUpgrades;
-import com.example.fasthoppers.ModContent;
+import java.util.Optional;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -14,7 +14,7 @@ import net.minecraft.world.inventory.AnvilMenu;
 import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.item.ItemStack;
 
-/** Anvil: enchanted book (one max-level enchant) + Magical Tome -> book one level higher, 0 XP. */
+/** Our custom anvil rules (Magical Tome, Wide Mining books, Disenchanted Books) - all cost 0 XP. */
 @Mixin(AnvilMenu.class)
 public abstract class AnvilMenuMixin {
 	@Shadow
@@ -25,18 +25,14 @@ public abstract class AnvilMenuMixin {
 	@Inject(method = "createResult", at = @At("HEAD"), cancellable = true)
 	private void fasthoppers$createResult(CallbackInfo ci) {
 		AbstractContainerMenu menu = (AbstractContainerMenu) (Object) this;
-		ItemStack left = menu.getSlot(0).getItem();
-		ItemStack right = menu.getSlot(1).getItem();
-		if (!right.is(ModContent.MAGICAL_TOME)) {
-			return;
+		Optional<ItemStack> custom = EnchantUpgrades.anvilCustom(menu.getSlot(0).getItem(), menu.getSlot(1).getItem());
+		if (custom.isEmpty()) {
+			return; // not ours: vanilla handles it
 		}
-		ItemStack result = EnchantUpgrades.anvilResult(left);
-		if (result.isEmpty()) {
-			return; // not a valid upgrade: let vanilla treat it as "no result"
-		}
+		ItemStack result = custom.get();
 		menu.getSlot(2).set(result);
 		this.cost.set(0);
-		this.repairItemCountCost = 1; // consume exactly one Tome
+		this.repairItemCountCost = result.isEmpty() ? 0 : 1; // use up exactly one of the second slot
 		ci.cancel();
 	}
 
@@ -44,9 +40,11 @@ public abstract class AnvilMenuMixin {
 	@Inject(method = "mayPickup", at = @At("HEAD"), cancellable = true, require = 0)
 	private void fasthoppers$mayPickup(Player player, boolean hasStack, CallbackInfoReturnable<Boolean> cir) {
 		AbstractContainerMenu menu = (AbstractContainerMenu) (Object) this;
-		if (hasStack
-				&& menu.getSlot(1).getItem().is(ModContent.MAGICAL_TOME)
-				&& !EnchantUpgrades.anvilResult(menu.getSlot(0).getItem()).isEmpty()) {
+		if (!hasStack || this.cost.get() != 0) {
+			return;
+		}
+		Optional<ItemStack> custom = EnchantUpgrades.anvilCustom(menu.getSlot(0).getItem(), menu.getSlot(1).getItem());
+		if (custom.isPresent() && !custom.get().isEmpty()) {
 			cir.setReturnValue(true);
 		}
 	}

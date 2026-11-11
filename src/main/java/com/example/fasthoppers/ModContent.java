@@ -31,6 +31,13 @@ public final class ModContent {
 	/** Smithing-table template. Looks like the netherite upgrade template + glint. */
 	public static final Item ENCHANTED_FORGE = registerForge("enchanted_forge");
 
+	public static final Item ENCHANTED_LAPIS = registerGlint("enchanted_lapis", Rarity.UNCOMMON);
+	public static final Item ENCHANTED_LAPIS_BLOCK = registerGlint("enchanted_lapis_block", Rarity.RARE);
+	public static final Item ABSOLUTE_LAPIS_BLOCK = registerGlint("absolute_lapis_block", Rarity.EPIC);
+	public static final Item TESSELLATED_LAPIS_BLOCK = registerGlint("tessellated_lapis_block", Rarity.EPIC);
+	/** Holds a (stored) Wide Mining level; re-enchant it with the matching lapis block in an anvil. */
+	public static final Item DISENCHANTED_BOOK = registerDisenchanted("disenchanted_book");
+
 	public static final Block BETTER_HOPPER = registerHopper("better_hopper", HopperTier.BETTER);
 	public static final Block SUPER_HOPPER = registerHopper("super_hopper", HopperTier.SUPER);
 	public static final Block MEGA_HOPPER = registerHopper("mega_hopper", HopperTier.MEGA);
@@ -67,6 +74,28 @@ public final class ModContent {
 		return Component.literal(text).withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC);
 	}
 
+	private static Item registerGlint(String name, Rarity rarity) {
+		ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, FastHoppers.id(name));
+		Item.Properties props = new Item.Properties()
+				.setId(key)
+				.rarity(rarity)
+				.component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
+		return Registry.register(BuiltInRegistries.ITEM, key, new Item(props));
+	}
+
+	private static Item registerDisenchanted(String name) {
+		ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, FastHoppers.id(name));
+		Item.Properties props = new Item.Properties()
+				.setId(key)
+				.stacksTo(1)
+				.rarity(Rarity.RARE)
+				.component(DataComponents.LORE, new ItemLore(List.of(
+						lore("The magic has drained from its pages."),
+						lore("Re-enchant it in an anvil with a lapis block:"),
+						lore("Enchanted (II), Absolute (III), Tessellated (IV)."))));
+		return Registry.register(BuiltInRegistries.ITEM, key, new Item(props));
+	}
+
 	private static Item registerForge(String name) {
 		ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, FastHoppers.id(name));
 		Item.Properties props = new Item.Properties()
@@ -100,6 +129,11 @@ public final class ModContent {
 		CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.INGREDIENTS).register(tab -> {
 			tab.accept(MAGICAL_TOME);
 			tab.accept(ENCHANTED_FORGE);
+			tab.accept(ENCHANTED_LAPIS);
+			tab.accept(ENCHANTED_LAPIS_BLOCK);
+			tab.accept(ABSOLUTE_LAPIS_BLOCK);
+			tab.accept(TESSELLATED_LAPIS_BLOCK);
+			tab.accept(DISENCHANTED_BOOK);
 		});
 		CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.REDSTONE_BLOCKS).register(tab -> {
 			tab.accept(HOPPER_CORE);

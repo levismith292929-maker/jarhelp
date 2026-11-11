@@ -6,5 +6,10 @@
   "block.fasthoppers.insta_hopper": "Insta Hopper",
   "item.fasthoppers.magical_tome": "Magical Tome",
   "item.fasthoppers.enchanted_forge": "Enchanted Forge",
-  "enchantment.fasthoppers.wide_mining": "Wide Mining"
+  "enchantment.fasthoppers.wide_mining": "Wide Mining",
+  "item.fasthoppers.enchanted_lapis": "Enchanted Lapis",
+  "item.fasthoppers.enchanted_lapis_block": "Enchanted Lapis Block",
+  "item.fasthoppers.absolute_lapis_block": "Absolute Lapis Block",
+  "item.fasthoppers.tessellated_lapis_block": "Tessellated Lapis Block",
+  "item.fasthoppers.disenchanted_book": "Disenchanted Book"
 }

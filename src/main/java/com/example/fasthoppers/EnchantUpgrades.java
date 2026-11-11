@@ -1,7 +1,9 @@
 package com.example.fasthoppers;
 
+import java.util.Optional;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -120,5 +122,104 @@ public final class EnchantUpgrades {
 		mutable.set(wide, 1);
 		result.set(DataComponents.STORED_ENCHANTMENTS, mutable.toImmutable());
 		return result;
+	}
+
+	// ---------------- Wide Mining anvil rules ----------------
+
+	/** Level of Wide Mining stored on a single-enchantment book (0 if none). */
+	private static int storedWide(ItemStack stack) {
+		ItemEnchantments stored = stack.get(DataComponents.STORED_ENCHANTMENTS);
+		if (stored == null || stored.size() != 1) {
+			return 0;
+		}
+		for (var entry : stored.entrySet()) {
+			if (entry.getKey().is(WideMining.WIDE_MINING)) {
+				return entry.getIntValue();
+			}
+		}
+		return 0;
+	}
+
+	/** Level of Wide Mining on a tool (0 if none). */
+	private static int toolWide(ItemStack stack) {
+		for (var entry : stack.getEnchantments().entrySet()) {
+			if (entry.getKey().is(WideMining.WIDE_MINING)) {
+				return entry.getIntValue();
+			}
+		}
+		return 0;
+	}
+
+	private static ItemStack bookWith(Item item, int level) {
+		Holder<Enchantment> wide = WideMining.holder();
+		if (wide == null) {
+			return ItemStack.EMPTY;
+		}
+		ItemStack result = new ItemStack(item);
+		ItemEnchantments.Mutable mutable = new ItemEnchantments.Mutable(ItemEnchantments.EMPTY);
+		mutable.set(wide, level);
+		result.set(DataComponents.STORED_ENCHANTMENTS, mutable.toImmutable());
+		return result;
+	}
+
+	private static Item lapisFor(int level) {
+		return switch (level) {
+			case 2 -> ModContent.ENCHANTED_LAPIS_BLOCK;
+			case 3 -> ModContent.ABSOLUTE_LAPIS_BLOCK;
+			case 4 -> ModContent.TESSELLATED_LAPIS_BLOCK;
+			default -> Items.AIR;
+		};
+	}
+
+	/**
+	 * All our custom anvil rules in one place.
+	 * Optional.empty()        = not one of our rules, let vanilla handle it
+	 * Optional.of(EMPTY)      = our rules apply but this combination is not allowed (no result)
+	 * Optional.of(someStack)  = the result (always costs 0 XP, uses up the second slot by 1)
+	 */
+	public static Optional<ItemStack> anvilCustom(ItemStack left, ItemStack right) {
+		if (left.isEmpty() || right.isEmpty()) {
+			return Optional.empty();
+		}
+
+		// Magical Tome: raise a max-level single-enchant book by one level
+		if (right.is(ModContent.MAGICAL_TOME)) {
+			ItemStack result = anvilResult(left);
+			return result.isEmpty() ? Optional.empty() : Optional.of(result);
+		}
+
+		// Disenchanted Book + the matching lapis block -> Wide Mining book of that level
+		if (left.is(ModContent.DISENCHANTED_BOOK)) {
+			int level = storedWide(left);
+			if (level >= 2 && level <= 4 && right.is(lapisFor(level))) {
+				return Optional.of(bookWith(Items.ENCHANTED_BOOK, level));
+			}
+			return Optional.of(ItemStack.EMPTY);
+		}
+		if (right.is(ModContent.DISENCHANTED_BOOK)) {
+			return Optional.of(ItemStack.EMPTY); // can't be applied to anything directly
+		}
+
+		boolean leftBook = left.is(Items.ENCHANTED_BOOK);
+		boolean rightBook = right.is(Items.ENCHANTED_BOOK);
+		int leftWide = leftBook ? storedWide(left) : toolWide(left);
+		int rightWide = rightBook ? storedWide(right) : toolWide(right);
+
+		// Two Wide Mining books of the same level -> Disenchanted Book one level higher
+		if (leftBook && rightBook && leftWide > 0 && rightWide > 0) {
+			if (leftWide == rightWide && leftWide < 4) {
+				return Optional.of(bookWith(ModContent.DISENCHANTED_BOOK, leftWide + 1));
+			}
+			return Optional.of(ItemStack.EMPTY);
+		}
+		// A Wide Mining book may not "level up" a tool that already has that level or higher
+		if (rightBook && rightWide > 0 && !leftBook && leftWide >= rightWide) {
+			return Optional.of(ItemStack.EMPTY);
+		}
+		// Two tools with Wide Mining can't be merged either
+		if (!leftBook && !rightBook && leftWide > 0 && rightWide > 0) {
+			return Optional.of(ItemStack.EMPTY);
+		}
+		return Optional.empty();
 	}
 }

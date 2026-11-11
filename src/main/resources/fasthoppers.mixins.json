@@ -5,7 +5,9 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "AnvilMenuMixin",
-    "SmithingMenuMixin"
+    "SmithingMenuMixin",
+    "CraftingMenuMixin",
+    "ResultSlotMixin"
   ],
   "injectors": {
     "defaultRequire": 1

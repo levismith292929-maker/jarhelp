@@ -1,0 +1,1 @@
+{ "parent": "minecraft:item/generated", "textures": { "layer0": "fasthoppers:item/tessellated_lapis_block" } }
