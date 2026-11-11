@@ -1,80 +1,85 @@
-package com.example.fasthoppers.mixin;
+package com.example.fasthoppers;
 
-import com.example.fasthoppers.BulkCrafting;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ClickType;
-import net.minecraft.world.inventory.CraftingMenu;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 /**
- * Crafting table: the 5x32 "plus" recipes (see BulkCrafting).
- * Hooks AbstractContainerMenu (used by every menu), so it doesn't depend on crafting-table method names.
- * (File keeps its old name; the class name doesn't matter to Mixin.)
+ * "Skyblock style" crafting: put the ingredient in a plus shape on the crafting table
+ * (top, left, middle, right, bottom), at least 32 in each of the 5 slots = 160 total.
+ * Crafting slots in a CraftingMenu: 0 = result, 1..9 = grid (row by row).
  */
-@Mixin(AbstractContainerMenu.class)
-public abstract class CraftingMenuMixin {
+public final class BulkCrafting {
+	public static final int PER_SLOT = 32;
+	private static final int[] PLUS = {2, 4, 5, 6, 8};
+	private static final int[] CORNERS = {1, 3, 7, 9};
 
-	/** Every tick the server syncs the open menu: show our result when the grid matches. */
-	@Inject(method = "broadcastChanges", at = @At("HEAD"))
-	private void fasthoppers$bulkCraft(CallbackInfo ci) {
-		Object self = this;
-		if (!(self instanceof CraftingMenu)) {
-			return;
-		}
-		AbstractContainerMenu menu = (AbstractContainerMenu) self;
-		ItemStack match = BulkCrafting.match(menu);
-		ItemStack current = menu.getSlot(0).getItem();
-		if (!match.isEmpty()) {
-			if (!ItemStack.isSameItemSameComponents(current, match) || current.getCount() != match.getCount()) {
-				menu.getSlot(0).set(match);
+	private BulkCrafting() {
+	}
+
+	private static Item[][] recipes() {
+		// { ingredient, result }
+		return new Item[][] {
+				{Items.LAPIS_LAZULI, ModContent.ENCHANTED_LAPIS},
+				{ModContent.ENCHANTED_LAPIS, ModContent.ENCHANTED_LAPIS_BLOCK},
+				{ModContent.ENCHANTED_LAPIS_BLOCK, ModContent.ABSOLUTE_LAPIS_BLOCK},
+				{ModContent.ABSOLUTE_LAPIS_BLOCK, ModContent.TESSELLATED_LAPIS_BLOCK}
+		};
+	}
+
+	/** The result for what's currently on the crafting grid, or EMPTY if it isn't one of our recipes. */
+	public static ItemStack match(AbstractContainerMenu menu) {
+		for (int corner : CORNERS) {
+			if (!menu.getSlot(corner).getItem().isEmpty()) {
+				return ItemStack.EMPTY;
 			}
-		} else if (BulkCrafting.isResult(current)) {
-			menu.getSlot(0).set(ItemStack.EMPTY); // grid no longer matches: clear our stale result
+		}
+		for (Item[] recipe : recipes()) {
+			boolean ok = true;
+			for (int slot : PLUS) {
+				ItemStack stack = menu.getSlot(slot).getItem();
+				if (!stack.is(recipe[0]) || stack.getCount() < PER_SLOT) {
+					ok = false;
+					break;
+				}
+			}
+			if (ok) {
+				return new ItemStack(recipe[1]);
+			}
+		}
+		return ItemStack.EMPTY;
+	}
+
+	public static boolean isResult(ItemStack stack) {
+		for (Item[] recipe : recipes()) {
+			if (stack.is(recipe[1])) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/** Vanilla already took 1 from each slot; take the other 31 so each slot loses 32 in total. */
+	public static void consumeExtra(AbstractContainerMenu menu) {
+		for (int slot : PLUS) {
+			Slot s = menu.getSlot(slot);
+			ItemStack stack = s.getItem();
+			if (!stack.isEmpty()) {
+				s.remove(Math.min(PER_SLOT - 1, stack.getCount()));
+			}
 		}
 	}
 
-	/**
-	 * Clicking our result: we hand over the item and take exactly 32 from each slot ourselves,
-	 * and cancel vanilla's click so its "give the ingredients back" behaviour can't run.
-	 */
-	@Inject(method = "clicked", at = @At("HEAD"), cancellable = true)
-	private void fasthoppers$clicked(int slotId, int button, ClickType clickType, Player player, CallbackInfo ci) {
-		Object self = this;
-		if (!(self instanceof CraftingMenu) || slotId != 0) {
-			return;
-		}
-		AbstractContainerMenu menu = (AbstractContainerMenu) self;
-		ItemStack result = menu.getSlot(0).getItem();
-		if (!BulkCrafting.isResult(result)) {
-			return; // a normal vanilla recipe: leave it alone
-		}
-		ci.cancel(); // from here on, vanilla never sees clicks on our result
-		if (clickType != ClickType.PICKUP && clickType != ClickType.QUICK_MOVE) {
-			return;
-		}
-		if (BulkCrafting.match(menu).isEmpty()) {
-			return; // stale result, nothing to craft
-		}
-		ItemStack out = result.copy();
-		if (clickType == ClickType.PICKUP) {
-			ItemStack carried = menu.getCarried();
-			if (carried.isEmpty()) {
-				menu.setCarried(out);
-			} else if (ItemStack.isSameItemSameComponents(carried, out)
-					&& carried.getCount() + out.getCount() <= carried.getMaxStackSize()) {
-				carried.grow(out.getCount());
-			} else {
-				return; // hands full of something else
+	/** Take the full 32 from each of the 5 plus-shaped slots (we handle the whole craft ourselves). */
+	public static void consumeAll(AbstractContainerMenu menu) {
+		for (int slot : PLUS) {
+			Slot s = menu.getSlot(slot);
+			ItemStack stack = s.getItem();
+			if (!stack.isEmpty()) {
+				s.remove(Math.min(PER_SLOT, stack.getCount()));
 			}
-		} else if (!player.getInventory().add(out)) {
-			return; // inventory full
 		}
-		BulkCrafting.consumeAll(menu);
-		menu.getSlot(0).set(BulkCrafting.match(menu)); // offer another one if there's still enough
 	}
 }
