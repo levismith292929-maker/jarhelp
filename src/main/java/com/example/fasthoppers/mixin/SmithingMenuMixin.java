@@ -9,6 +9,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.SmithingMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 /**
  * Smithing table: Enchanted Forge (template) + item (base) + upgraded book (addition)
@@ -24,7 +25,11 @@ public abstract class SmithingMenuMixin {
 			return;
 		}
 		// With a Forge in the template slot, WE decide the result (empty if the combination is invalid)
-		ItemStack result = EnchantUpgrades.smithingResult(menu.getSlot(1).getItem(), menu.getSlot(2).getItem());
+		ItemStack base = menu.getSlot(1).getItem();
+		ItemStack addition = menu.getSlot(2).getItem();
+		ItemStack result = addition.is(Items.DIAMOND_BLOCK)
+				? EnchantUpgrades.wideMiningBook(base)
+				: EnchantUpgrades.smithingResult(base, addition);
 		menu.getSlot(3).set(result);
 		ci.cancel();
 	}

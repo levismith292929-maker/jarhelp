@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:smithing_transform",
+  "template": "fasthoppers:enchanted_forge",
+  "base": "minecraft:enchanted_book",
+  "addition": "minecraft:diamond_block",
+  "result": { "id": "minecraft:stick", "count": 1 }
+}

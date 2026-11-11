@@ -5,6 +5,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 
@@ -83,6 +84,41 @@ public final class EnchantUpgrades {
 		ItemStack result = base.copy();
 		result.setCount(1);
 		EnchantmentHelper.updateEnchantments(result, mutable -> mutable.set(enchantment, bookLevel));
+		return result;
+	}
+
+	/**
+	 * SMITHING step: Forge + a book carrying Fortune 8+, Efficiency 10+, Mending and Unbreaking 8+
+	 * + a Diamond Block -> a book of Wide Mining I. Returns EMPTY if it doesn't apply.
+	 */
+	public static ItemStack wideMiningBook(ItemStack book) {
+		if (!book.is(Items.ENCHANTED_BOOK)) {
+			return ItemStack.EMPTY;
+		}
+		ItemEnchantments stored = book.get(DataComponents.STORED_ENCHANTMENTS);
+		if (stored == null) {
+			return ItemStack.EMPTY;
+		}
+		int fortune = 0, efficiency = 0, mending = 0, unbreaking = 0;
+		for (var entry : stored.entrySet()) {
+			Holder<Enchantment> holder = entry.getKey();
+			int level = entry.getIntValue();
+			if (holder.is(Enchantments.FORTUNE)) fortune = level;
+			else if (holder.is(Enchantments.EFFICIENCY)) efficiency = level;
+			else if (holder.is(Enchantments.MENDING)) mending = level;
+			else if (holder.is(Enchantments.UNBREAKING)) unbreaking = level;
+		}
+		if (fortune < 8 || efficiency < 10 || mending < 1 || unbreaking < 8) {
+			return ItemStack.EMPTY;
+		}
+		Holder<Enchantment> wide = WideMining.holder();
+		if (wide == null) {
+			return ItemStack.EMPTY;
+		}
+		ItemStack result = new ItemStack(Items.ENCHANTED_BOOK);
+		ItemEnchantments.Mutable mutable = new ItemEnchantments.Mutable(ItemEnchantments.EMPTY);
+		mutable.set(wide, 1);
+		result.set(DataComponents.STORED_ENCHANTMENTS, mutable.toImmutable());
 		return result;
 	}
 }
