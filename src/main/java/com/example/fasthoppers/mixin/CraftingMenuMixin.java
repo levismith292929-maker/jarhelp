@@ -1,41 +1,5 @@
-Claude
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Craftingmenumixin · JAVA
 package com.example.fasthoppers.mixin;
- 
+
 import com.example.fasthoppers.BulkCrafting;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -46,7 +10,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.CraftingMenu;
 import net.minecraft.world.item.ItemStack;
- 
+
 /**
  * Crafting table: the 5x32 "plus" recipes (see BulkCrafting).
  * Hooks AbstractContainerMenu (used by every menu), so it doesn't depend on crafting-table method names.
@@ -54,7 +18,7 @@ import net.minecraft.world.item.ItemStack;
  */
 @Mixin(AbstractContainerMenu.class)
 public abstract class CraftingMenuMixin {
- 
+
 	/** Every tick the server syncs the open menu: show our result when the grid matches. */
 	@Inject(method = "broadcastChanges", at = @At("HEAD"))
 	private void fasthoppers$bulkCraft(CallbackInfo ci) {
@@ -73,7 +37,7 @@ public abstract class CraftingMenuMixin {
 			menu.getSlot(0).set(ItemStack.EMPTY); // grid no longer matches: clear our stale result
 		}
 	}
- 
+
 	/**
 	 * Clicking our result: we hand over the item and take exactly 32 from each slot ourselves,
 	 * and cancel vanilla's click so its "give the ingredients back" behaviour can't run.
@@ -114,5 +78,3 @@ public abstract class CraftingMenuMixin {
 		menu.getSlot(0).set(BulkCrafting.match(menu)); // offer another one if there's still enough
 	}
 }
- 
-Claude finished the response
